@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.test.shop.mapper.OrderMapper">
+    <resultMap id="order" type="com.test.shop.pojo.Order">
+        <id property="id" column="id"/>
+        <result column="order_num" property="orderNum"/>
+        <result column="sku" property="sku"/>
+        <result column="realTotalMoney" property="realTotalMoney"/>
+        <result column="receiving_address_id" property="receivingAddressId"/>
+        <result column="pay_type" property="payType"/>
+        <result column="orderStatus" property="orderStatus"/>
+        <result column="createTime" property="createTime"/>
+        <result column="delayedTime" property="delayedTime"/>
+        <result column="payTime" property="payTime"/>
+        <result column="expressId" property="expressId"/>
+        <result column="expressNo" property="expressNo"/>
+        <result column="deliveryTime" property="deliveryTime"/>
+        <result column="receiveTime" property="receiveTime"/>
+        <collection property="receivingAddress" ofType="com.test.shop.pojo.ReceivingAddress">
+            <id column="rid" property="id"/>
+            <result column="user_id" property="userId"/>
+            <result column="province" property="province"/>
+            <result column="city" property="city"/>
+            <result column="detailed" property="detailed"/>
+            <result column="name" property="name"/>
+            <result column="phone" property="phone"/>
+        </collection>
+    </resultMap>
+    <select id="getOrder" resultMap="order">
+        SELECT
+        `order`.*,r.id rid,r.user_id,r.province,r.city,r.detailed,r.`name`,r.phone
+        from `order` INNER JOIN receiving_address r on `order`.receiving_address_id=r.id
+        <where>
+            <if test="userId != null">
+                and r.user_id = #{userId}
+            </if>
+            <if test="orderNum != null">
+                and order_num = #{orderNum}
+            </if>
+        </where>
+    </select>
+
+    <select id="getNotPayOrder" resultMap="order" parameterType="int">
+        SELECT
+        `order`.*,r.id rid,r.user_id,r.province,r.city,r.detailed,r.`name`,r.phone
+        from `order` INNER JOIN receiving_address r on `order`.receiving_address_id=r.id
+        where r.user_id = #{userId} and orderStatus = 1
+    </select>
+
+    <select id="getOrderById" resultMap="order" parameterType="int">
+        SELECT
+        `order`.*,r.id rid,r.user_id,r.province,r.city,r.detailed,r.`name`,r.phone
+        from `order` INNER JOIN receiving_address r on `order`.receiving_address_id=r.id
+        where `order`.id = #{id}
+    </select>
+    <insert id="insertOrder" parameterType="com.test.shop.pojo.Order">
+        insert into `order` values(null,#{orderNum},#{sku},#{realTotalMoney},#{receivingAddressId},null,#{orderStatus},now(),#{delayedTime},null,null,null,null,null)
+    </insert>
+    <update id="updataOrderForPay" parameterType="com.test.shop.pojo.Order">
+        update `order`
+        <set>
+            <if test="payType != null">
+                pay_type = #{payType},
+            </if>
+            payTime = now(),orderStatus=3
+        </set>
+        where id =#{id}
+    </update>
+    <update id="updataOrderForDelivery" parameterType="com.test.shop.pojo.Order">
+        update `order`
+        <set>
+            <if test="expressId != null">
+                expressId = #{expressId},
+            </if>
+            <if test="expressNo != null">
+                expressNo = #{expressNo},
+            </if>
+            deliveryTime = now(),orderStatus=4
+        </set>
+        where id =#{id}
+    </update>
+    <update id="updataOrderForReceive" parameterType="com.test.shop.pojo.Order">
+        update `order` set receiveTime=now(),orderStatus=5 where id =#{id}
+    </update>
+    <update id="updataOrderForCancel" parameterType="com.test.shop.pojo.Order">
+        update `order` set orderStatus=7 where id =#{id}
+    </update>
+    <update id="updataOrderForTimeOut" parameterType="com.test.shop.pojo.Order">
+        update `order` set orderStatus=2 where id =#{id}
+    </update>
+</mapper>

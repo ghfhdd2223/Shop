@@ -1,0 +1,19 @@
+
+
+spring:
+  redis:
+    port: 6379
+    host: 192.168.226.101
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    password: yinxiu0719
+    url: jdbc:mysql://39.105.161.43:3306/75
+    username: root
+server:
+  port: 8080
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*Mapper.xml
+logging:
+  level:
+    com.test.shop.mapper : debug
